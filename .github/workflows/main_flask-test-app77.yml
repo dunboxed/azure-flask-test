@@ -14,7 +14,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read #This is required for actions/checkout
+      contents: read
 
     steps:
       - uses: actions/checkout@v4
@@ -30,9 +30,17 @@ jobs:
           source venv/bin/activate
       
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          pip install flask gunicorn
         
-      # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
+      - name: Debug - List installed packages
+        run: pip list
+
+      - name: Test Flask App
+        run: |
+          python -m flask --version
+          python -c "from flask import Flask; print('Flask import successful')"
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -52,8 +60,8 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -63,6 +71,9 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
+
+      - name: Debug - List files
+        run: ls -la
 
       - name: Login to Azure
         uses: azure/login@v2
