@@ -6,9 +6,18 @@ on:
       - main
   workflow_dispatch:
 
+# Add these permissions at the top level
+permissions:
+  contents: read
+  id-token: write  # This is crucial for OIDC authentication
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write  # Repeat permissions for the job
+
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +57,9 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      contents: read
+      id-token: write  # Ensure write permissions for id-token
 
     steps:
       - name: Download artifact from build job
