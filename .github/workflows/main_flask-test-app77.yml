@@ -1,7 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
 name: Build and deploy Python app to Azure Web App - flask-test-app77
 
 on:
@@ -13,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-
     steps:
       - uses: actions/checkout@v4
 
@@ -32,15 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install flask gunicorn
-        
-      - name: Debug - List installed packages
-        run: pip list
-
-      - name: Test Flask App
-        run: |
-          python -m flask --version
-          python -c "from flask import Flask; print('Flask import successful')"
+          pip install gunicorn
 
       - name: Zip artifact for deployment
         run: zip release.zip ./* -r
@@ -59,9 +44,6 @@ jobs:
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write
-      contents: read
 
     steps:
       - name: Download artifact from build job
@@ -71,9 +53,6 @@ jobs:
 
       - name: Unzip artifact for deployment
         run: unzip release.zip
-
-      - name: Debug - List files
-        run: ls -la
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -88,4 +67,4 @@ jobs:
         with:
           app-name: 'flask-test-app77'
           slot-name: 'Production'
-          startup-command: 'gunicorn --bind 0.0.0.0:8000 app:app'
+          startup-command: 'gunicorn --bind 0.0.0.0:8000 wsgi:application'
